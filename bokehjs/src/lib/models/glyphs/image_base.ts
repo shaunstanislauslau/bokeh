@@ -3,7 +3,7 @@ import {Arrayable} from "core/types"
 import * as p from "core/properties"
 import {Context2d} from "core/util/canvas"
 import * as hittest from "core/hittest"
-import {Selection} from "../selections/selection"
+import {Selection, ImageIndex} from "../selections/selection"
 import {PointGeometry} from "core/geometry"
 import {SpatialIndex} from "core/util/spatial"
 
@@ -20,21 +20,7 @@ export interface ImageDataBase extends XYGlyphData {
   sh: Arrayable<number>
 }
 
-export interface ImageIndex {
-  index: number
-  dim1: number
-  dim2: number
-  flat_index: number
-}
-
 export interface ImageBaseView extends ImageDataBase {}
-
-export interface ImageIndex {
-  index: number
-  dim1: number
-  dim2: number
-  flat_index: number
-}
 
 export class ImageBaseView extends XYGlyphView {
   model: ImageBase
@@ -52,7 +38,7 @@ export class ImageBaseView extends XYGlyphView {
       if (isNaN(l + r + t + b) || !isFinite(l + r + t + b)) {
         continue
       }
-      points.push({minX: l, minY: b, maxX: r, maxY: t, i})
+      points.push({x0: l, y0: b, x1: r, y1: t, i})
     }
     return new SpatialIndex(points)
   }
@@ -143,8 +129,7 @@ export class ImageBaseView extends XYGlyphView {
     const {sx, sy} = geometry
     const x = this.renderer.xscale.invert(sx)
     const y = this.renderer.yscale.invert(sy)
-    const bbox = hittest.validate_bbox_coords([x, x], [y, y])
-    const candidates = this.index.indices(bbox)
+    const candidates = this.index.indices({x0: x, x1: x, y0: y, y1: y})
     const result = hittest.create_empty_hit_test_result()
 
     result.image_indices = []
@@ -182,7 +167,6 @@ export class ImageBase extends XYGlyph {
   }
 
   static initClass(): void {
-    this.prototype.type = 'ImageBase'
     this.prototype.default_view = ImageBaseView
 
     this.define<ImageBase.Props>({

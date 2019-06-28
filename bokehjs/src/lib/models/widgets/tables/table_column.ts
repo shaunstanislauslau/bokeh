@@ -31,8 +31,6 @@ export class TableColumn extends Model {
   }
 
   static initClass(): void {
-    this.prototype.type = 'TableColumn'
-
     this.define<TableColumn.Props>({
       field:        [ p.String                                ],
       title:        [ p.String                                ],
